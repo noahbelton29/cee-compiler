@@ -6,6 +6,7 @@ add_executable(cee
   src/lexer.cpp
   src/utils.cpp
   src/ast.cpp
+  src/parser.cpp
 )
 
 target_include_directories(cee PUBLIC include/)
