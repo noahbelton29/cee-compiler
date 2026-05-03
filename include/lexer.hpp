@@ -8,7 +8,32 @@
 #include <vector>
 
 namespace cee {
-  enum class TokenType { NUMBER, PLUS, MINUS, STAR, SLASH, LPAREN, RPAREN, END_OF_FILE };
+  enum class TokenType {
+    NUMBER_LITERAL,
+    IDENTIFIER,
+
+    // keywords
+    KW_INT,
+    KW_FLOAT,
+    KW_CHAR,
+    KW_VOID,
+    KW_RETURN,
+    KW_IF,
+    KW_ELSE,
+    KW_WHILE,
+    KW_FOR,
+
+    // operators
+    PLUS,
+    MINUS,
+    STAR,
+    SLASH,
+    LPAREN,
+    RPAREN,
+    EQUALS,
+    SEMICOLON,
+    END_OF_FILE
+  };
 
   struct Token {
     TokenType   token_type;
@@ -28,5 +53,6 @@ namespace cee {
     char               advance();
     void               skip_whitespace();
     Token              read_number();
+    Token              read_identifier();
   };
 } // namespace cee

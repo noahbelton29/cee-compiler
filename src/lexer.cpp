@@ -2,9 +2,10 @@
 // Created by Nil on 03/05/2026.
 //
 
-#include "../include/lexer.hpp"
+#include "lexer.hpp"
 
 #include <iostream>
+#include <unordered_map>
 
 namespace cee {
   Lexer::Lexer(std::string source) : source(std::move(source)) {}
@@ -21,12 +22,32 @@ namespace cee {
       advance();
   }
 
+  Token Lexer::read_identifier() {
+    std::string ident;
+    while (isalnum(peek()) || peek() == '_') {
+      ident += advance();
+    }
+
+    // keyword lookup table
+    static const std::unordered_map<std::string, TokenType> keywords = {
+            {"int", TokenType::KW_INT},   {"float", TokenType::KW_FLOAT},   {"char", TokenType::KW_CHAR},
+            {"void", TokenType::KW_VOID}, {"return", TokenType::KW_RETURN}, {"if", TokenType::KW_IF},
+            {"else", TokenType::KW_ELSE}, {"while", TokenType::KW_WHILE},   {"for", TokenType::KW_FOR},
+    };
+
+    if (const auto it = keywords.find(ident); it != keywords.end()) {
+      return {it->second, ident};
+    }
+
+    return {TokenType::IDENTIFIER, ident};
+  }
+
   Token Lexer::read_number() {
     std::string number;
     while (isdigit(peek())) {
       number += advance();
     }
-    return {TokenType::NUMBER, number};
+    return {TokenType::NUMBER_LITERAL, number};
   }
 
   std::vector<Token> Lexer::tokenise() {
@@ -42,8 +63,15 @@ namespace cee {
 
       const char current_char = peek();
 
+      // number detection
       if (isdigit(current_char)) {
         tokens.push_back(read_number());
+        continue;
+      }
+
+      // identifier detection
+      if (isalpha(current_char) || current_char == '_') {
+        tokens.push_back(read_identifier());
         continue;
       }
 
@@ -66,6 +94,12 @@ namespace cee {
           break;
         case ')':
           tokens.push_back({TokenType::RPAREN, ")"});
+          break;
+        case '=':
+          tokens.push_back({TokenType::EQUALS, "="});
+          break;
+        case ';':
+          tokens.push_back({TokenType::SEMICOLON, ";"});
           break;
         default:
           std::cerr << "Unknown character: " << current_char << "\n";

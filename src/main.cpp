@@ -4,11 +4,11 @@
 
 #include <iostream>
 
-#include "../include/lexer.hpp"
-#include "../include/utils.hpp"
+#include "lexer.hpp"
+#include "utils.hpp"
 
 int main() {
-  cee::Lexer lexer("3 + 5 * (10 - 2)");
+  cee::Lexer lexer("int x = 5;");
   auto       tokens = lexer.tokenise();
 
   for (auto &[token_type, value]: tokens) {
