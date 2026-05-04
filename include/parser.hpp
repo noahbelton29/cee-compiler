@@ -21,9 +21,12 @@ namespace cee {
     Token     &peek();
     Token     &advance();
     NodePtr    parse_expression(int min_precedence = 0);
+    NodePtr    parse_statement();
     NodePtr    parse_primary();
     NodePtr    parse_variable_declaration();
     NodePtr    parse_return();
+    NodePtr    parse_block();
+    NodePtr    parse_function();
     static int get_precedence(TokenType token_type);
   };
 } // namespace cee

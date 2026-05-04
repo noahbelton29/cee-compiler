@@ -32,6 +32,8 @@ namespace cee {
     RPAREN,
     EQUALS,
     SEMICOLON,
+    LBRACE,
+    RBRACE,
     END_OF_FILE
   };
 

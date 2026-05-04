@@ -101,6 +101,12 @@ namespace cee {
         case ';':
           tokens.push_back({TokenType::SEMICOLON, ";"});
           break;
+        case '{':
+          tokens.push_back({TokenType::LBRACE, "{"});
+          break;
+        case '}':
+          tokens.push_back({TokenType::RBRACE, "}"});
+          break;
         default:
           std::cerr << "Unknown character: " << current_char << "\n";
       }

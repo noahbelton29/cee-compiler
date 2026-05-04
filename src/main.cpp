@@ -9,6 +9,7 @@
 #include "ast.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
+#include "semantics.hpp"
 #include "utils.hpp"
 
 int main(int argc, char *argv[]) {
@@ -40,6 +41,15 @@ int main(int argc, char *argv[]) {
   cee::Parser parser(tokens);
   const auto  ast = parser.parse();
   cee::print_ast(ast);
+
+  try {
+    cee::SemanticAnalyser analyser;
+    analyser.analyse(ast.get());
+    std::cout << "Semantic analysis passed\n\n";
+  } catch (const std::runtime_error &e) {
+    std::cerr << "Semantic error: " << e.what() << "\n";
+    return 1;
+  }
 
   return 0;
 }

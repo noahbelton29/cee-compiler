@@ -29,6 +29,15 @@ namespace cee {
       print_ast(return_node->value, indent + 2);
     } else if (const auto *identifier_node = dynamic_cast<cee::IdentifierNode *>(node.get())) {
       std::cout << pad << "IdentifierNode(" << identifier_node->name << ")\n";
+    } else if (const auto *function_node = dynamic_cast<cee::FunctionNode *>(node.get())) {
+      std::cout << pad << "FunctionNode(" << function_node->return_type << " " << function_node->name << ")\n";
+      std::cout << pad << "  body:\n";
+      print_ast(function_node->body, indent + 2);
+    } else if (const auto *block_node = dynamic_cast<cee::BlockNode *>(node.get())) {
+      std::cout << pad << "BlockNode\n";
+      for (const auto &statement: block_node->statements) {
+        print_ast(statement, indent + 2);
+      }
     } else if (const auto *program_node = dynamic_cast<cee::ProgramNode *>(node.get())) {
       std::cout << pad << "ProgramNode\n";
       for (const auto &statement: program_node->statements) {
@@ -79,6 +88,10 @@ namespace cee {
         return "EQUALS";
       case TokenType::SEMICOLON:
         return "SEMICOLON";
+      case TokenType::LBRACE:
+        return "LBRACE";
+      case TokenType::RBRACE:
+        return "RBRACE";
       case TokenType::END_OF_FILE:
         return "EOF";
     }

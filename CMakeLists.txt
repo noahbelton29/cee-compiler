@@ -7,6 +7,7 @@ add_executable(cee
   src/utils.cpp
   src/ast.cpp
   src/parser.cpp
+  src/semantics.cpp
 )
 
 target_include_directories(cee PUBLIC include/)

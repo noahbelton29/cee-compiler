@@ -15,18 +15,9 @@ namespace cee {
 
   NodePtr Parser::parse() {
     auto program = std::make_unique<ProgramNode>();
-
     while (peek().token_type != TokenType::END_OF_FILE) {
-      if (peek().token_type == TokenType::KW_INT || peek().token_type == TokenType::KW_FLOAT ||
-          peek().token_type == TokenType::KW_CHAR) {
-        program->statements.push_back(parse_variable_declaration());
-      } else if (peek().token_type == TokenType::KW_RETURN) {
-        program->statements.push_back(parse_return());
-      } else {
-        program->statements.push_back(parse_expression());
-      }
+      program->statements.push_back(parse_statement());
     }
-
     return program;
   }
 
@@ -52,6 +43,48 @@ namespace cee {
     }
 
     throw std::runtime_error("Unexpected token: " + peek().value);
+  }
+
+  NodePtr Parser::parse_function() {
+    const std::string return_type = advance().value;
+
+    if (peek().token_type != TokenType::IDENTIFIER) {
+      throw std::runtime_error("Expected function name");
+    }
+    const std::string name = advance().value;
+
+    if (peek().token_type != TokenType::LPAREN) {
+      throw std::runtime_error("Expected '(' after function name");
+    }
+    advance();
+
+    // TODO: params
+    if (peek().token_type != TokenType::RPAREN) {
+      throw std::runtime_error("Expected ')'");
+    }
+    advance();
+
+    NodePtr body = parse_block();
+
+    return std::make_unique<FunctionNode>(return_type, name, std::move(body));
+  }
+
+  NodePtr Parser::parse_block() {
+    if (peek().token_type != TokenType::LBRACE) {
+      throw std::runtime_error("Expected '{'");
+    }
+    advance();
+
+    std::vector<NodePtr> statements;
+    while (peek().token_type != TokenType::RBRACE) {
+      if (peek().token_type == TokenType::END_OF_FILE) {
+        throw std::runtime_error("Expected '}' but got EOF");
+      }
+      statements.push_back(parse_statement());
+    }
+
+    advance();
+    return std::make_unique<BlockNode>(std::move(statements));
   }
 
   NodePtr Parser::parse_return() {
@@ -87,6 +120,23 @@ namespace cee {
     advance();
 
     return std::make_unique<VariableDeclarationNode>(type, name, std::move(initializer));
+  }
+
+  NodePtr Parser::parse_statement() {
+    if (peek().token_type == TokenType::KW_INT || peek().token_type == TokenType::KW_FLOAT ||
+        peek().token_type == TokenType::KW_CHAR || peek().token_type == TokenType::KW_VOID) {
+
+      if (position + 2 < tokens.size() && tokens[position + 2].token_type == TokenType::LPAREN) {
+        return parse_function();
+      }
+      return parse_variable_declaration();
+    }
+
+    if (peek().token_type == TokenType::KW_RETURN) {
+      return parse_return();
+    }
+
+    return parse_expression();
   }
 
   NodePtr Parser::parse_expression(const int min_precedence) {

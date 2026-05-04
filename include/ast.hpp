@@ -35,6 +35,18 @@ namespace cee {
     explicit IdentifierNode(std::string name);
   };
 
+  struct BlockNode : ASTNode {
+    std::vector<NodePtr> statements;
+    explicit BlockNode(std::vector<NodePtr> statements);
+  };
+
+  struct FunctionNode : ASTNode {
+    std::string return_type;
+    std::string name;
+    NodePtr     body;
+    FunctionNode(std::string return_type, std::string name, NodePtr body);
+  };
+
   struct VariableDeclarationNode : ASTNode {
     std::string type;
     std::string name;
