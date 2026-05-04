@@ -13,12 +13,32 @@ namespace cee {
 
   Token &Parser::advance() { return tokens[position++]; }
 
-  NodePtr Parser::parse() { return parse_expression(); }
+  NodePtr Parser::parse() {
+    auto program = std::make_unique<ProgramNode>();
+
+    while (peek().token_type != TokenType::END_OF_FILE) {
+      if (peek().token_type == TokenType::KW_INT || peek().token_type == TokenType::KW_FLOAT ||
+          peek().token_type == TokenType::KW_CHAR) {
+        program->statements.push_back(parse_variable_declaration());
+      } else if (peek().token_type == TokenType::KW_RETURN) {
+        program->statements.push_back(parse_return());
+      } else {
+        program->statements.push_back(parse_expression());
+      }
+    }
+
+    return program;
+  }
 
   NodePtr Parser::parse_primary() {
     if (peek().token_type == TokenType::NUMBER_LITERAL) {
       auto [token_type, value] = advance();
       return std::make_unique<NumberNode>(std::stod(value));
+    }
+
+    if (peek().token_type == TokenType::IDENTIFIER) {
+      auto [token_type, value] = advance();
+      return std::make_unique<IdentifierNode>(value);
     }
 
     if (peek().token_type == TokenType::LPAREN) {
@@ -32,6 +52,41 @@ namespace cee {
     }
 
     throw std::runtime_error("Unexpected token: " + peek().value);
+  }
+
+  NodePtr Parser::parse_return() {
+    advance();
+
+    NodePtr expression = parse_expression();
+
+    if (peek().token_type != TokenType::SEMICOLON) {
+      throw std::runtime_error("Expected ';' after return value");
+    }
+    advance();
+
+    return std::make_unique<ReturnNode>(std::move(expression));
+  }
+
+  NodePtr Parser::parse_variable_declaration() {
+    const std::string type = advance().value;
+
+    if (peek().token_type != TokenType::IDENTIFIER) {
+      throw std::runtime_error("Expected variable name after type");
+    }
+    const std::string name = advance().value;
+
+    if (peek().token_type != TokenType::EQUALS) {
+      throw std::runtime_error("Expected '=' after variable name");
+    }
+    advance();
+    NodePtr initializer = parse_expression();
+
+    if (peek().token_type != TokenType::SEMICOLON) {
+      throw std::runtime_error("Expected ';' after initializer");
+    }
+    advance();
+
+    return std::make_unique<VariableDeclarationNode>(type, name, std::move(initializer));
   }
 
   NodePtr Parser::parse_expression(const int min_precedence) {

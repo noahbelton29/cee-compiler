@@ -3,8 +3,42 @@
 //
 
 #include "utils.hpp"
+#include "ast.hpp"
+
+#include <iostream>
 
 namespace cee {
+  void print_ast(const NodePtr &node, const int indent) {
+    const std::string pad(indent * 2, ' ');
+
+    if (const auto *number_node = dynamic_cast<cee::NumberNode *>(node.get())) {
+      std::cout << pad << "NumberNode(" << number_node->value << ")\n";
+    } else if (const auto *binary_op_node = dynamic_cast<cee::BinaryOpNode *>(node.get())) {
+      std::cout << pad << "BinaryOpNode('" << binary_op_node->op << "')\n";
+      std::cout << pad << "  left:\n";
+      print_ast(binary_op_node->left, indent + 2);
+      std::cout << pad << "  right:\n";
+      print_ast(binary_op_node->right, indent + 2);
+    } else if (const auto *var_decl_node = dynamic_cast<cee::VariableDeclarationNode *>(node.get())) {
+      std::cout << pad << "VariableDeclarationNode(" << var_decl_node->type << " " << var_decl_node->name << ")\n";
+      std::cout << pad << "  initializer:\n";
+      print_ast(var_decl_node->initializer, indent + 2);
+    } else if (const auto *return_node = dynamic_cast<cee::ReturnNode *>(node.get())) {
+      std::cout << pad << "ReturnNode\n";
+      std::cout << pad << "  value:\n";
+      print_ast(return_node->value, indent + 2);
+    } else if (const auto *identifier_node = dynamic_cast<cee::IdentifierNode *>(node.get())) {
+      std::cout << pad << "IdentifierNode(" << identifier_node->name << ")\n";
+    } else if (const auto *program_node = dynamic_cast<cee::ProgramNode *>(node.get())) {
+      std::cout << pad << "ProgramNode\n";
+      for (const auto &statement: program_node->statements) {
+        print_ast(statement, indent + 2);
+      }
+    } else {
+      std::cout << pad << "UnknownNode\n";
+    }
+  }
+
   std::string token_type_name(const TokenType token_type) {
     switch (token_type) {
       case TokenType::NUMBER_LITERAL:
